@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app
+  labels:
+    app: inventory-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: inventory-app
+          image: ghcr.io/cloudops-code/inventoryapp:$IMAGE_TAG
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-app-secret
+                  key: jwt-secret
+          volumeMounts:
+            - name: data-volume
+              mountPath: /home/node/app/data
+      volumes:
+        - name: data-volume
+          emptyDir: {}

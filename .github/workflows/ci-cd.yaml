@@ -90,3 +90,46 @@ jobs:
             routes/
             db/
             data/
+            coverage/
+       deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.run_number }}
+    environment:
+      name: production
+      url: http://inventory.local
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Set up Kubeconfig
+        run: |
+          echo "$KUBECONFIG_DATA" > kubeconfig
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+
+      - name: Create imagePullSecret for GHCR
+        run: |
+          kubectl --kubeconfig=kubeconfig delete secret ghcr-secret --ignore-not-found
+          kubectl --kubeconfig=kubeconfig create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ secrets.GHCR_USERNAME }} \
+            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --docker-email=${{ secrets.GHCR_EMAIL }}
+
+      - name: Substitute image tag in deployment manifest
+        run: |
+          envsubst < k8s/deployment.yaml > k8s/deployment.subst.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl --kubeconfig=kubeconfig apply -f k8s/secret.yaml
+          kubectl --kubeconfig=kubeconfig apply -f k8s/deployment.subst.yaml
+          kubectl --kubeconfig=kubeconfig apply -f k8s/service.yaml
+          kubectl --kubeconfig=kubeconfig apply -f k8s/ingress.yaml
