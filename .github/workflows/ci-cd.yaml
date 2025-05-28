@@ -110,9 +110,9 @@ jobs:
 
       - name: Set up Kubeconfig
         run: |
-          echo "$KUBECONFIG_DATA" > kubeconfig
+          echo "$KUBECONFIG" > kubeconfig
         env:
-          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
 
       - name: Create imagePullSecret for GHCR
         run: |
