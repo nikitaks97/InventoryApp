@@ -122,8 +122,8 @@ jobs:
 
       - name: Create imagePullSecret for GHCR
         run: |
-          kubectl --kubeconfig=kubeconfig delete secret ghcr-secret --ignore-not-found
-          kubectl --kubeconfig=kubeconfig create secret docker-registry ghcr-secret \
+          kubectl  delete secret ghcr-secret --ignore-not-found
+          kubectl  create secret docker-registry ghcr-secret \
             --docker-server=ghcr.io \
             --docker-username=${{ secrets.GHCR_USERNAME }} \
             --docker-password=${{ secrets.GHCR_TOKEN }} \
@@ -135,7 +135,7 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl --kubeconfig=kubeconfig apply -f k8s/secret.yaml
-          kubectl --kubeconfig=kubeconfig apply -f k8s/deployment.subst.yaml
-          kubectl --kubeconfig=kubeconfig apply -f k8s/service.yaml
-          kubectl --kubeconfig=kubeconfig apply -f k8s/ingress.yaml
+          kubectl  apply -f k8s/secret.yaml
+          kubectl  apply -f k8s/deployment.subst.yaml
+          kubectl  apply -f k8s/service.yaml
+          kubectl  apply -f k8s/ingress.yaml
