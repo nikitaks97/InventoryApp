@@ -56,7 +56,7 @@ jobs:
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
       - name: Build Docker image
-        run: docker build -t ghcr.io/cloudops-code/inventoryapp:${IMAGE_TAG} .
+        run: docker build -t ghcr.io/nikitaks97/InventoryApp:${IMAGE_TAG} .
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -66,7 +66,7 @@ jobs:
           password: ${{ secrets.GIHUB_PAT }}
 
       - name: Push Docker image to GHCR
-        run: docker push ghcr.io/cloudops-code/inventoryapp:${IMAGE_TAG}
+        run: docker push ghcr.io/nikitaks97/InventoryApp:${IMAGE_TAG}
 
       - name: Set npm version from GitHub run number
         run: |
