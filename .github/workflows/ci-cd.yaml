@@ -57,7 +57,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_PAT }}
+          password: ${{ secrets.GIHUB_PAT }}
 
       - name: Push Docker image to GHCR
         run: docker push ghcr.io/cloudops-code/inventoryapp:${IMAGE_TAG}
@@ -70,7 +70,7 @@ jobs:
       - name: Publish npm package to GitHub Packages
         run: npm publish --registry=https://npm.pkg.github.com/
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_PAT }}
+          NODE_AUTH_TOKEN: ${{ secrets.GIHUB_PAT }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
