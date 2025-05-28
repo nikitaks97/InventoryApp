@@ -1,0 +1,63 @@
+<%- contentFor('body') %>
+
+<div class="mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1><i class="fas fa-boxes me-2"></i>Items</h1>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search items...">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <% items.forEach(function(item) { %>
+        <div class="col-md-4 item-card mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><%= item.name %></h5>
+                    <p class="card-text"><%= item.description %></p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">Quantity: <%= item.quantity %></span>
+                        <div class="item-actions">
+                            <a href="/items/<%= item._id %>/edit" class="btn btn-sm btn-outline-primary" 
+                               data-bs-toggle="tooltip" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger delete-item" 
+                                    data-id="<%= item._id %>"
+                                    data-bs-toggle="tooltip" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+</div>
+
+<% if (items.length === 0) { %>
+    <div class="text-center my-5">
+        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+        <h3 class="text-muted">No items found</h3>
+        <p>Start by adding some items to your inventory.</p>
+        <a href="/items/new" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Item
+        </a>
+    </div>
+<% } %>
+
+<a href="/items/new" class="btn btn-primary btn-floating" data-bs-toggle="tooltip" title="Add New Item">
+    <i class="fas fa-plus"></i>
+</a>
+
+<div class="loading">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
