@@ -1,4 +1,4 @@
-# Use official Node.js latest LTS image
+# Use official Node.js latest LTS image as base image
 FROM node:20-alpine
 
 # Set working directory
