@@ -16,7 +16,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: inventory-app-secret
       containers:
         - name: inventory-app
           image: ghcr.io/cloudops-code/inventoryapp:$IMAGE_TAG

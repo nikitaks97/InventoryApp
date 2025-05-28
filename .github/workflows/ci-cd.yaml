@@ -120,14 +120,14 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Create imagePullSecret for GHCR
-        run: |
-          kubectl  delete secret ghcr-secret --ignore-not-found
-          kubectl  create secret docker-registry ghcr-secret \
-            --docker-server=ghcr.io \
-            --docker-username=${{ secrets.GHCR_USERNAME }} \
-            --docker-password=${{ secrets.GHCR_TOKEN }} \
-            --docker-email=${{ secrets.GHCR_EMAIL }}
+      #- name: Create imagePullSecret for GHCR
+       # run: |
+         # kubectl  delete secret ghcr-secret --ignore-not-found
+         # kubectl  create secret docker-registry ghcr-secret \
+           # --docker-server=ghcr.io \
+           # --docker-username=${{ secrets.GHCR_USERNAME }} \
+           # --docker-password=${{ secrets.GHCR_TOKEN }} \
+           # --docker-email=${{ secrets.GHCR_EMAIL }}
 
       - name: Substitute image tag in deployment manifest
         run: |
