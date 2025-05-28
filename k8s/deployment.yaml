@@ -19,7 +19,7 @@ spec:
         - name: inventory-app-secret
       containers:
         - name: inventory-app
-          image: ghcr.io/cloudops-code/inventoryapp:$IMAGE_TAG
+          image: ghcr.io/nikitaks97/inventoryapp:$IMAGE_TAG
           ports:
             - containerPort: 3000
           env:
