@@ -28,6 +28,12 @@ jobs:
       - name: Run tests with coverage
         run: npm test -- --coverage
 
+      - name: List coverage directory for debug
+        run: |
+          echo "Listing coverage directory contents:"
+          ls -l coverage || echo "No coverage directory found"
+          cat coverage/lcov.info || echo "No lcov.info found"
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
@@ -110,9 +116,9 @@ jobs:
 
       - name: Set up Kubeconfig
         run: |
-          echo "$KUBECONFIG" > kubeconfig
-        env:
-          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       - name: Create imagePullSecret for GHCR
         run: |
