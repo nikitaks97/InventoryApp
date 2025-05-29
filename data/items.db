@@ -1,7 +1,6 @@
+{"name":"Laptop","description":"Dell XPS 13, 16GB RAM, 512GB SSD","quantity":10,"_id":"DM3ELRv5dzAgfdZk"}
+{"name":"Monitor","description":"24-inch Full HD Monitor","quantity":15,"_id":"Pw8NgWHhJDo3FXWf"}
+{"name":"Keyboard","description":"Mechanical Keyboard, RGB","quantity":25,"_id":"YwKS3lN9LWwDiSdK"}
+{"name":"Mouse","description":"Wireless Mouse","quantity":30,"_id":"fxi3uAcYz4uKGjsB"}
+{"name":"Webcam","description":"HD USB Webcam","quantity":12,"_id":"vc0PKquULzS9XIpU"}
 {"$$indexCreated":{"fieldName":"name","unique":true,"sparse":false}}
-{"name":"Test Item","description":"Desc","quantity":5,"_id":"HHeE4geg0w5jchoz","createdAt":{"$$date":1748505617821},"updatedAt":{"$$date":1748505617821}}
-{"$$deleted":true,"_id":"HHeE4geg0w5jchoz"}
-{"name":"WebTest","description":"WebDesc","quantity":2,"_id":"28V7UuvyyCTaTg5w","createdAt":{"$$date":1748505618328},"updatedAt":{"$$date":1748505618328}}
-{"$$deleted":true,"_id":"28V7UuvyyCTaTg5w"}
-{"name":"DelMe","description":"ToDelete","quantity":1,"_id":"EiyQAEAzRDvxL4mr","createdAt":{"$$date":1748505618734},"updatedAt":{"$$date":1748505618734}}
-{"$$deleted":true,"_id":"EiyQAEAzRDvxL4mr"}
