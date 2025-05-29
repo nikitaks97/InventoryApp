@@ -119,4 +119,117 @@ describe('Item Routes', () => {
       expect(response.statusCode).toBe(500);
     });
   });
+
+  describe('GET /items/:id/edit', () => {
+    it('should render edit form for existing item', async () => {
+      const mockItem = { _id: '1', name: 'Test Item', description: 'Test Description', quantity: 5 };
+      mockDatabase.findById.mockResolvedValue(mockItem);
+
+      const renderSpy = jest.spyOn(app.response, 'render').mockImplementation(function(view, options) {
+        this.status(200).send('<html>Edit Form</html>');
+      });
+
+      const response = await request(app).get('/items/1/edit');
+      expect(response.status).toBe(200);
+      expect(mockDatabase.findById).toHaveBeenCalledWith('1');
+
+      renderSpy.mockRestore();
+    });
+
+    it('should handle errors when item not found for edit', async () => {
+      mockDatabase.findById.mockRejectedValue(new Error('Item not found'));
+
+      const response = await request(app).get('/items/999/edit');
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /items/:id', () => {
+    it('should update an existing item', async () => {
+      const updateData = { name: 'Updated Item', description: 'Updated Description', quantity: 10 };
+      mockDatabase.findById.mockResolvedValue({ _id: '1', name: 'Original', description: 'Original', quantity: 5 });
+      mockDatabase.update.mockResolvedValue({ ...updateData, _id: '1' });
+
+      const response = await request(app)
+        .post('/items/1')
+        .send(updateData)
+        .expect(302); // Redirect after update
+
+      expect(mockDatabase.update).toHaveBeenCalledWith('1', updateData);
+    });
+
+    it('should handle unique constraint violation on update', async () => {
+      const updateData = { name: 'Duplicate Name', description: 'Description', quantity: 5 };
+      mockDatabase.findById.mockResolvedValue({ _id: '1', name: 'Original', description: 'Original', quantity: 5 });
+      mockDatabase.update.mockRejectedValue(new Error('unique constraint violated'));
+
+      const renderSpy = jest.spyOn(app.response, 'render').mockImplementation(function(view, options) {
+        this.status(200).send('<html>Edit Form with Error</html>');
+      });
+
+      const response = await request(app)
+        .post('/items/1')
+        .send(updateData);
+
+      expect(response.status).toBe(200);
+      renderSpy.mockRestore();
+    });
+
+    it('should handle other update errors', async () => {
+      const updateData = { name: 'Test', description: 'Test', quantity: 5 };
+      mockDatabase.findById.mockResolvedValue({ _id: '1', name: 'Original', description: 'Original', quantity: 5 });
+      mockDatabase.update.mockRejectedValue(new Error('Database error'));
+
+      const response = await request(app)
+        .post('/items/1')
+        .send(updateData);
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('Additional POST /items edge cases', () => {
+    it('should handle generic database errors during creation', async () => {
+      const newItem = { name: 'Test Item', description: 'Test Description', quantity: 5 };
+      mockDatabase.create.mockRejectedValue(new Error('Database connection failed'));
+
+      const response = await request(app)
+        .post('/items')
+        .send(newItem);
+
+      expect(response.status).toBe(500);
+    });
+
+    it('should handle required field validation errors', async () => {
+      const invalidItem = { name: 'Test', description: '', quantity: 5 };
+      mockDatabase.create.mockRejectedValue(new Error('description is required'));
+
+      const renderSpy = jest.spyOn(app.response, 'render').mockImplementation(function(view, options) {
+        this.status(200).send('<html>Form with Error</html>');
+      });
+
+      const response = await request(app)
+        .post('/items')
+        .send(invalidItem);
+
+      expect(response.status).toBe(200);
+      renderSpy.mockRestore();
+    });
+
+    it('should handle unique constraint violation during creation', async () => {
+      const duplicateItem = { name: 'Existing Item', description: 'Description', quantity: 5 };
+      mockDatabase.create.mockRejectedValue(new Error('unique constraint violated'));
+
+      const renderSpy = jest.spyOn(app.response, 'render').mockImplementation(function(view, options) {
+        this.status(200).send('<html>Form with Unique Error</html>');
+      });
+
+      const response = await request(app)
+        .post('/items')
+        .send(duplicateItem);
+
+      expect(response.status).toBe(200);
+      renderSpy.mockRestore();
+    });
+  });
 });

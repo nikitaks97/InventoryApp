@@ -12,7 +12,7 @@ beforeAll(async () => {
 
 afterEach(async () => {
   // Clean up all items after each test
-  if (database.db) await database.db.remove({}, { multi: true });
+  await database.clear();
 });
 
 describe('Web UI E2E', () => {
@@ -42,8 +42,8 @@ describe('Web UI E2E', () => {
     const res = await request(app)
       .post('/items')
       .send('name=&description=NoName&quantity=1');
-    expect(res.status).toBe(200);
-    expect(res.text).toMatch(/required/i);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/items/new');
   });
 
   it('should delete an item via DELETE /items/:id', async () => {

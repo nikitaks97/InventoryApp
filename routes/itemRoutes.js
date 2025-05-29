@@ -22,27 +22,64 @@ function itemRoutes() {
     // POST /items - Create new item
     router.post('/', async (req, res, next) => {
         try {
-            const itemData = {
-                name: req.body.name,
-                description: req.body.description,
-                quantity: parseInt(req.body.quantity, 10)
-            };
+            // Trim and validate input
+            const name = req.body.name ? req.body.name.toString().trim() : '';
+            const description = req.body.description ? req.body.description.toString().trim() : '';
+            const quantity = parseInt(req.body.quantity, 10);
 
+            // Validate required fields
+            if (!name || !description) {
+                if (req.flash) {
+                    req.flash('error', 'Name and description are required');
+                    return res.redirect('/items/new');
+                } else {
+                    return res.status(200).render('items/new', { 
+                        title: 'New Item',
+                        error: 'Name and description are required'
+                    });
+                }
+            }
+
+            // Validate quantity
+            if (isNaN(quantity) || quantity < 0) {
+                if (req.flash) {
+                    req.flash('error', 'Quantity must be a non-negative number');
+                    return res.redirect('/items/new');
+                } else {
+                    return res.status(200).render('items/new', { 
+                        title: 'New Item',
+                        error: 'Quantity must be a non-negative number'
+                    });
+                }
+            }
+
+            const itemData = { name, description, quantity };
             await database.create(itemData);
+            if (req.flash) {
+                req.flash('success', 'Item created successfully!');
+            }
             res.redirect('/items');
         } catch (error) {
             if (error.message.includes('unique')) {
-                res.render('items/new', {
-                    error: 'An item with this name already exists',
-                    item: req.body,
-                    title: 'New Item'
-                });
+                if (req.flash) {
+                    req.flash('error', 'An item with this name already exists');
+                    res.redirect('/items/new');
+                } else {
+                    res.status(200).render('items/new', { 
+                        title: 'New Item',
+                        error: 'An item with this name already exists'
+                    });
+                }
             } else if (error.message.includes('required')) {
-                res.render('items/new', {
-                    error: error.message,
-                    item: req.body,
-                    title: 'New Item'
-                });
+                if (req.flash) {
+                    req.flash('error', error.message);
+                    res.redirect('/items/new');
+                } else {
+                    res.status(200).render('items/new', { 
+                        title: 'New Item',
+                        error: error.message
+                    });
+                }
             } else {
                 next(error);
             }
@@ -62,22 +99,76 @@ function itemRoutes() {
     // POST /items/:id - Update item
     router.post('/:id', async (req, res, next) => {
         try {
-            const itemData = {
-                name: req.body.name,
-                description: req.body.description,
-                quantity: parseInt(req.body.quantity, 10)
-            };
+            // Get the existing item to merge with updated data
+            let existingItem;
+            try {
+                existingItem = await database.findById(req.params.id);
+            } catch (error) {
+                if (error.message.includes('not found')) {
+                    if (req.flash) {
+                        req.flash('error', 'Item not found');
+                        return res.redirect('/items');
+                    } else {
+                        return res.status(404).render('error', { 
+                            message: 'Item not found',
+                            error: {}
+                        });
+                    }
+                }
+                throw error;
+            }
+            
+            // Trim and validate input, keeping existing values if not provided
+            const name = req.body.name ? req.body.name.toString().trim() : existingItem.name;
+            const description = req.body.description ? req.body.description.toString().trim() : existingItem.description;
+            const quantity = req.body.quantity !== undefined ? parseInt(req.body.quantity, 10) : existingItem.quantity;
 
+            // Validate required fields
+            if (!name || !description) {
+                if (req.flash) {
+                    req.flash('error', 'Name and description are required');
+                    return res.redirect(`/items/${req.params.id}/edit`);
+                } else {
+                    return res.status(200).render('items/edit', { 
+                        item: existingItem,
+                        title: 'Edit Item',
+                        error: 'Name and description are required'
+                    });
+                }
+            }
+
+            // Validate quantity
+            if (isNaN(quantity) || quantity < 0) {
+                if (req.flash) {
+                    req.flash('error', 'Quantity must be a non-negative number');
+                    return res.redirect(`/items/${req.params.id}/edit`);
+                } else {
+                    return res.status(200).render('items/edit', { 
+                        item: existingItem,
+                        title: 'Edit Item',
+                        error: 'Quantity must be a non-negative number'
+                    });
+                }
+            }
+
+            const itemData = { name, description, quantity };
             await database.update(req.params.id, itemData);
+            if (req.flash) {
+                req.flash('success', 'Item updated successfully!');
+            }
             res.redirect('/items');
         } catch (error) {
             if (error.message.includes('unique')) {
-                const item = { ...req.body, _id: req.params.id };
-                res.render('items/edit', {
-                    error: 'An item with this name already exists',
-                    item,
-                    title: 'Edit Item'
-                });
+                if (req.flash) {
+                    req.flash('error', 'An item with this name already exists');
+                    res.redirect(`/items/${req.params.id}/edit`);
+                } else {
+                    res.status(200).render('items/edit', { 
+                        item: { _id: req.params.id, name: req.body.name, description: req.body.description, quantity: req.body.quantity },
+                        title: 'Edit Item',
+                        error: 'An item with this name already exists'
+                    });
+                }
             } else {
                 next(error);
             }
