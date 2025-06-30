@@ -64,10 +64,13 @@ SESSION_SECRET=your-session-secret
 JWT_SECRET=your-jwt-secret
 ```
 
-### 4. Seed the Database (Optional)
+### 4. Load Sample Data (Optional)
+To populate the database with sample inventory items:
 ```bash
 node seed.js
 ```
+
+This will add sample items like laptops, monitors, keyboards, etc. to get you started. The script safely skips items that already exist, so it can be run multiple times without creating duplicates.
 
 ### 5. Start the Application
 ```bash
@@ -83,11 +86,14 @@ The application will be available at `http://localhost:3000`
 # Build the Docker image
 docker build -t inventoryapp:local .
 
-# Run the container (includes auto-seeding)
+# Run the container
 docker run -p 3000:3000 inventoryapp:local
+
+# Load sample data (run in a separate terminal after container is running)
+docker exec <container-name> node seed.js
 ```
 
-The Docker container automatically seeds the database with sample data on startup.
+**Note**: Unlike the development setup, the Docker container does not automatically seed data. Run the seed command manually if you want sample data.
 
 ## ☸️ Kubernetes Deployment
 

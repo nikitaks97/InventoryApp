@@ -3,6 +3,7 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash');
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 const { initDatabase } = require('./db');
 const itemRoutes = require('./routes/itemRoutes');
@@ -25,7 +26,11 @@ function createApp() {
         secret: process.env.SESSION_SECRET || 'keyboard cat',
         resave: false,
         saveUninitialized: false,
-        cookie: { secure: process.env.NODE_ENV === 'production' }
+        cookie: { secure: process.env.NODE_ENV === 'production' },
+        store: new SQLiteStore({
+            db: 'sessions.db',
+            dir: './data'
+        })
     }));
 
     // Flash messages setup

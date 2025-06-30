@@ -1,5 +1,5 @@
-# Use official Node.js latest LTS image as base image
-FROM node:20-alpine
+# Use a full Node.js image instead of Alpine to avoid dependency issues
+FROM node:20
 
 # Set working directory
 WORKDIR /app
@@ -13,8 +13,12 @@ RUN npm ci --omit=dev
 # Copy the rest of the application code
 COPY . .
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
 # Expose the port (default for many Node.js apps)
 EXPOSE 3000
 
 # Start the application
-CMD node seed.js && node server.js
+CMD ["node", "server.js"]
