@@ -13,6 +13,10 @@ RUN npm ci --omit=dev
 # Copy the rest of the application code
 COPY . .
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
 # Expose the port (default for many Node.js apps)
 EXPOSE 3000
 
