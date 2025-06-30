@@ -1,9 +1,6 @@
 # Use official Node.js latest LTS image as base image
 FROM node:20-alpine
 
-# Update and install security patches
-RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Set working directory
 WORKDIR /app
 
