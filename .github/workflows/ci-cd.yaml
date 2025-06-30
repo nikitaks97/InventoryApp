@@ -196,9 +196,18 @@ jobs:
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/ingress.yaml
 
-    #  - name: Wait for deployment to be ready
-    #    run: |
-    #      kubectl rollout status deployment/inventory-app --timeout=300s
+      - name: Wait for deployment to be ready
+        run: |
+          kubectl rollout status deployment/inventory-app --timeout=300s
+
+     # - name: Debug pod issues if deployment fails
+     #   if: failure()
+     #   run: |
+     #     echo "Deployment failed, debugging..."
+     #     kubectl get pods -l app=inventory-app
+     #     kubectl describe pods -l app=inventory-app
+     #     kubectl logs -l app=inventory-app --tail=50 --previous=false || true
+     #     kubectl logs -l app=inventory-app --tail=50 --previous=true || true
 
       - name: Verify deployment health
         run: |
