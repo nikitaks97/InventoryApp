@@ -16,6 +16,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,6 +35,15 @@ jobs:
 
       - name: Run tests with coverage
         run: npm test -- --coverage
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js --format json --output-file eslint-results.json || true
+
+      - name: Upload ESLint results
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-results
+          path: eslint-results.json
 
       - name: List coverage directory for debug
         run: |
@@ -68,15 +85,28 @@ jobs:
       - name: Push Docker image to GHCR
         run: docker push ghcr.io/nikitaks97/inventoryapp:${IMAGE_TAG}
 
+      - name: Security scan Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/nikitaks97/inventoryapp:${{ github.run_number }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
       - name: Set npm version from GitHub run number
         run: |
           NEW_VERSION="1.0.${GITHUB_RUN_NUMBER}"
           npm version --no-git-tag-version $NEW_VERSION
 
-      #- name: Publish npm package to GitHub Packages
-      #  run: npm publish --registry=https://npm.pkg.github.com/
-      #  env:
-       #   NODE_AUTH_TOKEN: ${{ secrets.GIHUB_PAT }}
+      - name: Publish npm package to GitHub Packages
+        run: npm publish --registry=https://npm.pkg.github.com/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GIHUB_PAT }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -122,8 +152,8 @@ jobs:
 
       - name: Create imagePullSecret for GHCR
         run: |
-          kubectl  delete secret ghcr-secret --ignore-not-found
-          kubectl  create secret docker-registry ghcr-secret \
+          kubectl delete secret ghcr-secret --ignore-not-found
+          kubectl create secret docker-registry ghcr-secret \
             --docker-server=ghcr.io \
             --docker-username=${{ secrets.GHCR_USERNAME }} \
             --docker-password=${{ secrets.GHCR_TOKEN }} \
@@ -135,7 +165,34 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-        
-          kubectl  apply -f k8s/deployment.subst.yaml
-          kubectl  apply -f k8s/service.yaml
-          kubectl  apply -f k8s/ingress.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/deployment.subst.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Wait for deployment to be ready
+        run: |
+          kubectl rollout status deployment/inventory-app --timeout=300s
+
+      - name: Verify deployment health
+        run: |
+          kubectl get pods -l app=inventory-app
+          kubectl describe deployment inventory-app
+
+      - name: Notify deployment success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "✅ Inventory App successfully deployed to production!"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "❌ Inventory App deployment failed!"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
