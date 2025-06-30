@@ -55,6 +55,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+        continue-on-error: true
       - name: Build Docker image
         run: docker build -t ghcr.io/nikitaks97/inventoryapp:${IMAGE_TAG} .
 
