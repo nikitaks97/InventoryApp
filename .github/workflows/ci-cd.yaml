@@ -91,6 +91,11 @@ jobs:
       - name: Push Docker image to GHCR
         run: docker push ghcr.io/nikitaks97/inventoryapp:${IMAGE_TAG}
 
+      - name: Verify image was pushed
+        run: |
+          echo "Verifying image was pushed successfully..."
+          docker manifest inspect ghcr.io/nikitaks97/inventoryapp:${IMAGE_TAG}
+
       - name: Security scan Docker image
         uses: aquasecurity/trivy-action@master
         with:
@@ -172,8 +177,13 @@ jobs:
           kubectl create secret docker-registry ghcr-secret \
             --docker-server=ghcr.io \
             --docker-username=${{ github.actor }} \
-            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            --docker-password=${{ secrets.GHCR_TOKEN }} \
             --docker-email=${{ github.actor }}@users.noreply.github.com
+
+      - name: Verify secret was created
+        run: |
+          kubectl get secret ghcr-secret -o yaml
+          kubectl describe secret ghcr-secret
 
       - name: Substitute image tag in deployment manifest
         run: |
