@@ -76,11 +76,12 @@ describe('Database Class', () => {
     });
 
     it('should handle database errors during findById', async () => {
-      // Close the database to simulate an error
-      await testDb.db.close();
-      testDb.isConnected = false;
+      // Spy on the ensureConnected method and make it throw an error
+      const ensureConnectedSpy = jest.spyOn(testDb, 'ensureConnected').mockRejectedValue(new Error('Connection failed'));
       
-      await expect(testDb.findById(itemId)).rejects.toThrow();
+      await expect(testDb.findById(itemId)).rejects.toThrow('Connection failed');
+      
+      ensureConnectedSpy.mockRestore();
     });
   });
 

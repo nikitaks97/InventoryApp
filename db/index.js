@@ -54,6 +54,12 @@ class Database {
         if (!this.isConnected || !this.db) {
             await this.connect();
         }
+        // Check if database connection is still valid
+        try {
+            await this.db.get('SELECT 1');
+        } catch (error) {
+            throw new Error('Database connection is not available');
+        }
     }
 
     async findAll() {
